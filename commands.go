@@ -16,7 +16,7 @@ func Make(name string) {
 	}
 
 	if err := os.MkdirAll(dir, 0755); err != nil {
-		OutErr("failed to create '%s' : '%v'", name, err)
+		OutErr("failed to create '%s': '%v'", name, err)
 		os.Exit(1)
 	}
 
@@ -52,4 +52,28 @@ func Remove(name string) {
 	OutOK("'%s' removed", name)
 }
 
-func List() {}
+func List() {
+	entries, err := os.ReadDir(gdepRoot)
+	if err != nil {
+		if os.IsNotExist(err) {
+			OutEmpty()
+			return
+		}
+		OutErr("failed to read '%s': %v", gdepRoot, err)
+		os.Exit(1)
+	}
+
+	var names []string
+	for _, entry := range entries {
+		if entry.IsDir() {
+			names = append(names, entry.Name())
+		}
+	}
+
+	if len(names) == 0 {
+		OutEmpty()
+		return
+	}
+
+	OutList(names)
+}
