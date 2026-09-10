@@ -28,6 +28,8 @@ func Make(name string) {
 			os.Exit(1)
 		}
 	}
+
+	OutOK("'%s' created", name)
 }
 
 func Remove(name string) {
@@ -46,6 +48,8 @@ func Remove(name string) {
 		OutErr("failed to remove '%s': %v", name, err)
 		os.Exit(1)
 	}
+
+	OutOK("'%s' removed", name)
 }
 
 func List() {}
