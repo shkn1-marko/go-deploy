@@ -13,30 +13,28 @@ func main() {
 	switch os.Args[1] {
 	case "make":
 		requireName()
-		if err := Make(os.Args[2]); err != nil {
-			fail(err)
+		name := os.Args[2]
+		err := Make(name)
+		OutputStatus("make", err, fmt.Sprintf("created /etc/gdep/%s", name), "build.sh", "deploy.sh")
+		if err != nil {
+			os.Exit(1)
 		}
-		fmt.Printf("created /etc/gdep/%s\n", os.Args[2])
 
 	case "remove":
 		requireName()
-		if err := Remove(os.Args[2]); err != nil {
-			fail(err)
+		name := os.Args[2]
+		err := Remove(name)
+		OutputStatus("remove", err, fmt.Sprintf("removed /etc/gdep/%s", name))
+		if err != nil {
+			os.Exit(1)
 		}
-		fmt.Printf("removed /etc/gdep/%s\n", os.Args[2])
 
 	case "list":
 		names, err := List()
 		if err != nil {
 			fail(err)
 		}
-		if len(names) == 0 {
-			fmt.Println("no projects registered")
-			return
-		}
-		for _, n := range names {
-			fmt.Println(n)
-		}
+		OutputList("list", names)
 
 	default:
 		fail(fmt.Errorf("unknown command: %s", os.Args[1]))
