@@ -5,10 +5,10 @@ import (
 	"path/filepath"
 )
 
-const gdepRoot = "/etc/gdep"
+const deploymentsRoot = "/etc/gdep/deployments"
 
 func Make(name string) {
-	dir := filepath.Join(gdepRoot, name)
+	dir := filepath.Join(deploymentsRoot, name)
 
 	if _, err := os.Stat(dir); err == nil {
 		OutErr("'%s' already exists", name)
@@ -35,7 +35,7 @@ func Make(name string) {
 func Remove(name string) {
 	requireDeployment(name)
 
-	dir := filepath.Join(gdepRoot, name)
+	dir := filepath.Join(deploymentsRoot, name)
 	if err := os.RemoveAll(dir); err != nil {
 		OutErr("failed to remove '%s': %v", name, err)
 		os.Exit(1)
@@ -45,13 +45,13 @@ func Remove(name string) {
 }
 
 func List() {
-	entries, err := os.ReadDir(gdepRoot)
+	entries, err := os.ReadDir(deploymentsRoot)
 	if err != nil {
 		if os.IsNotExist(err) {
 			OutEmpty()
 			return
 		}
-		OutErr("failed to read '%s': %v", gdepRoot, err)
+		OutErr("failed to read '%s': %v", deploymentsRoot, err)
 		os.Exit(1)
 	}
 
@@ -81,7 +81,7 @@ func Deploy(name string) {
 }
 
 func requireDeployment(name string) {
-	dir := filepath.Join(gdepRoot, name)
+	dir := filepath.Join(deploymentsRoot, name)
 
 	if _, err := os.Stat(dir); err != nil {
 		if os.IsNotExist(err) {
