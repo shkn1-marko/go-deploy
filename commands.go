@@ -77,3 +77,5 @@ func List() {
 
 	OutList(names)
 }
+
+func Deploy(name string) {}
