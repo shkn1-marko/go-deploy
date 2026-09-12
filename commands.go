@@ -78,4 +78,10 @@ func List() {
 	OutList(names)
 }
 
-func Deploy(name string) {}
+func Deploy(name string) {
+	if err := RunDeploy(name, false); err != nil {
+		OutErr("deploy failed: %v", err)
+		os.Exit(1)
+	}
+	OutOK("'%s' deployed", name)
+}

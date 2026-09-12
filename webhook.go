@@ -49,7 +49,7 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 	log.Println("push event received:", payload.Repository.Name)
-	go Deploy(payload.Repository.Name)
+	go RunDeploy(payload.Repository.Name, true)
 }
 
 func validSignature(header string, body []byte) bool {
