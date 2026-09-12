@@ -33,17 +33,9 @@ func Make(name string) {
 }
 
 func Remove(name string) {
+	requireDeployment(name)
+
 	dir := filepath.Join(gdepRoot, name)
-
-	if _, err := os.Stat(dir); err != nil {
-		if os.IsNotExist(err) {
-			OutErr("'%s' does not exist", name)
-		} else {
-			OutErr("failed to check '%s': '%v'", name, err)
-		}
-		os.Exit(1)
-	}
-
 	if err := os.RemoveAll(dir); err != nil {
 		OutErr("failed to remove '%s': %v", name, err)
 		os.Exit(1)
@@ -79,9 +71,24 @@ func List() {
 }
 
 func Deploy(name string) {
+	requireDeployment(name)
+
 	if err := RunDeploy(name, false); err != nil {
 		OutErr("deploy failed: %v", err)
 		os.Exit(1)
 	}
 	OutOK("'%s' deployed", name)
+}
+
+func requireDeployment(name string) {
+	dir := filepath.Join(gdepRoot, name)
+
+	if _, err := os.Stat(dir); err != nil {
+		if os.IsNotExist(err) {
+			OutErr("'%s' does not exist", name)
+		} else {
+			OutErr("failed to check '%s': '%v'", name, err)
+		}
+		os.Exit(1)
+	}
 }

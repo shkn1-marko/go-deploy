@@ -8,6 +8,7 @@ var argCount = map[string]int{
 	"make":   1,
 	"remove": 1,
 	"list":   0,
+	"deploy": 1,
 }
 
 func Input(args []string) {
@@ -35,6 +36,8 @@ func Input(args []string) {
 		Remove(args[2])
 	case "list":
 		List()
+	case "deploy":
+		Deploy(args[2])
 	default:
 		OutErr("'%s' is known but undefined", command)
 		os.Exit(1)
