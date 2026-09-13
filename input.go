@@ -9,6 +9,7 @@ var argCount = map[string]int{
 	"remove": 1,
 	"list":   0,
 	"deploy": 1,
+	"start":  0,
 }
 
 func Input(args []string) {
@@ -38,6 +39,8 @@ func Input(args []string) {
 		List()
 	case "deploy":
 		Deploy(args[2])
+	case "start":
+		StartWebhookServer()
 	default:
 		OutErr("'%s' is known but undefined", command)
 		os.Exit(1)
