@@ -40,6 +40,11 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if r.Header.Get("X-GitHub-Event") != "push" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	var payload webhookPayload
 	if err := json.Unmarshal(body, &payload); err != nil {
 		http.Error(w, "bad payload", http.StatusBadRequest)
