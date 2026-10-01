@@ -40,7 +40,11 @@ func (s *server) handleWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !s.validSignature(r.Header.Get("X-Hub-Signature-256"), body) {
+	if !validSignature(
+		os.Getenv("GDEP_WEBHOOK_SECRET"),
+		r.Header.Get("X-Hub-Signature-256"),
+		body,
+	) {
 		http.Error(w, "invalid signature", http.StatusUnauthorized)
 		return
 	}
@@ -62,24 +66,19 @@ func (s *server) handleWebhook(w http.ResponseWriter, r *http.Request) {
 	go RunDeploy(payload.Repository.Name, true)
 }
 
-func (s *server) validSignature(header string, body []byte) bool {
-	const prefix = "sha256="
-	if len(header) <= len(prefix) || header[:len(prefix)] != prefix {
-		return false
-	}
-
-	secret := os.Getenv("GDEP_WEBHOOK_SECRET")
-	mac := hmac.New(sha256.New, []byte(secret))
-	mac.Write(body)
-	expected := hex.EncodeToString(mac.Sum(nil))
-
-	return hmac.Equal([]byte(header[len(prefix):]), []byte(expected))
-}
-
 func (s *server) handleRegisterDevice(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+
+	if !validSignature(
+		os.Getenv("GDEP_REGISTER_SECRET"),
+		r.Header.Get("X-GDEP-Signature-256"),
+		body,
+	) {
+		http.Error(w, "invalid signature", http.StatusUnauthorized)
 		return
 	}
 
@@ -96,4 +95,17 @@ func (s *server) handleRegisterDevice(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	log.Println("--")
+}
+
+func validSignature(secret, header string, body []byte) bool {
+	const prefix = "sha256="
+	if len(header) <= len(prefix) || header[:len(prefix)] != prefix {
+		return false
+	}
+
+	mac := hmac.New(sha256.New, []byte(secret))
+	mac.Write(body)
+	expected := hex.EncodeToString(mac.Sum(nil))
+
+	return hmac.Equal([]byte(header[len(prefix):]), []byte(expected))
 }
