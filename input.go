@@ -40,7 +40,7 @@ func Input(args []string) {
 	case "deploy":
 		Deploy(args[2])
 	case "start":
-		StartWebhookServer()
+		Start()
 	default:
 		OutErr("'%s' is known but undefined", command)
 		os.Exit(1)

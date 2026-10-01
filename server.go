@@ -11,31 +11,35 @@ import (
 	"os"
 )
 
-const webhookAddr = ":9091"
-
-type webhookPayload struct {
-	Repository struct {
-		Name string `json:"name"`
-	} `json:"repository"`
+type server struct {
+	store *DeviceStore
 }
 
-func StartWebhookServer() {
-	http.HandleFunc("/webhook", handleWebhook)
-	log.Println("webhook server listening on", webhookAddr)
+func Start() {
+	store, err := NewDeviceStore("device.json")
+	if err != nil {
+		log.Fatalln("--", err)
+	}
 
-	if err := http.ListenAndServe(webhookAddr, nil); err != nil {
-		log.Fatalln("webhook server failed:", err)
+	s := &server{store: store}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/webhook", s.handleWebhook)
+
+	log.Println("--", ":9091")
+	if err := http.ListenAndServe(":9091", mux); err != nil {
+		log.Fatalln("--")
 	}
 }
 
-func handleWebhook(w http.ResponseWriter, r *http.Request) {
+func (s *server) handleWebhook(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
 
-	if !validSignature(r.Header.Get("X-Hub-Signature-256"), body) {
+	if !s.validSignature(r.Header.Get("X-Hub-Signature-256"), body) {
 		http.Error(w, "invalid signature", http.StatusUnauthorized)
 		return
 	}
@@ -53,11 +57,11 @@ func handleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 
-	log.Println("push event received:", payload.Repository.Name)
+	log.Println("--", payload.Repository.Name)
 	go RunDeploy(payload.Repository.Name, true)
 }
 
-func validSignature(header string, body []byte) bool {
+func (s *server) validSignature(header string, body []byte) bool {
 	const prefix = "sha256="
 	if len(header) <= len(prefix) || header[:len(prefix)] != prefix {
 		return false
