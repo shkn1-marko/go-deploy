@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const scriptTimeout = 1 * time.Minute
+const scriptTimeout = 5 * time.Minute
 
 func RunDeploy(name string, store *DeviceStore, sender *FCMSender) error {
 	dir := filepath.Join(deploymentsRoot, name)
