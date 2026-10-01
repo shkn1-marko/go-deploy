@@ -12,7 +12,8 @@ import (
 )
 
 type server struct {
-	store *DeviceStore
+	store  *DeviceStore
+	sender *FCMSender
 }
 
 func Start() {
@@ -21,7 +22,12 @@ func Start() {
 		log.Fatalln("--", err)
 	}
 
-	s := &server{store: store}
+	sender, err := NewFCMSender(os.Getenv("FCM_CREDENTIALS_FILE"))
+	if err != nil {
+		log.Fatalln("--", err)
+	}
+
+	s := &server{store: store, sender: sender}
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/webhook", s.handleWebhook)
@@ -62,8 +68,7 @@ func (s *server) handleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 
-	device, _ := s.store.Current()
-	go RunDeploy(device, payload.Repository.Name)
+	go RunDeploy(payload.Repository.Name, s.store, s.sender)
 }
 
 func (s *server) handleRegisterDevice(w http.ResponseWriter, r *http.Request) {

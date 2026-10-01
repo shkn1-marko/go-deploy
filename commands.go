@@ -73,7 +73,7 @@ func List() {
 func Deploy(name string) {
 	requireDeployment(name)
 
-	if err := RunDeploy("", name); err != nil {
+	if err := RunDeploy(name, nil, nil); err != nil {
 		OutErr("deploy failed: %v", err)
 		os.Exit(1)
 	}
