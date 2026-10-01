@@ -5,3 +5,7 @@ type webhookPayload struct {
 		Name string `json:"name"`
 	} `json:"repository"`
 }
+
+type registerDevicePayload struct {
+	InstallationID string `json:"installationId"`
+}
