@@ -16,7 +16,7 @@ type server struct {
 }
 
 func Start() {
-	store, err := NewDeviceStore("device.json")
+	store, err := NewDeviceStore(os.Getenv("GDEP_DEVICE_FILE"))
 	if err != nil {
 		log.Fatalln("--", err)
 	}
