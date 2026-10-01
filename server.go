@@ -62,8 +62,8 @@ func (s *server) handleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 
-	log.Println("--", payload.Repository.Name)
-	go RunDeploy(payload.Repository.Name, true)
+	device, _ := s.store.Current()
+	go RunDeploy(device, payload.Repository.Name)
 }
 
 func (s *server) handleRegisterDevice(w http.ResponseWriter, r *http.Request) {

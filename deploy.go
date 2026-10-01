@@ -11,7 +11,7 @@ import (
 
 const scriptTimeout = 1 * time.Minute
 
-func RunDeploy(name string, notify bool) error {
+func RunDeploy(device, name string) error {
 	dir := filepath.Join(deploymentsRoot, name)
 
 	if _, err := os.Stat(dir); err != nil {
@@ -21,14 +21,14 @@ func RunDeploy(name string, notify bool) error {
 	for _, script := range []string{"build.sh", "deploy.sh"} {
 		output, err := runScript(dir, script)
 		if err != nil {
-			if notify {
+			if device != "" {
 				EmailERR(name, script, output, err)
 			}
 			return fmt.Errorf("%s failed: %w", script, err)
 		}
 	}
 
-	if notify {
+	if device != "" {
 		EmailOK(name)
 	}
 
