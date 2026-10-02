@@ -22,8 +22,8 @@ type DeployStatus struct {
 	Name      string      `json:"name"`
 	Build     StageStatus `json:"buildStatus"`
 	Deploy    StageStatus `json:"deployStatus"`
-	Cause     string      `json:"cause"`
-	Output    string      `json:"output"`
+	Cause     string      `json:"cause,omitempty"`
+	Output    string      `json:"output,omitempty"`
 	Timestamp int64       `json:"timestamp"`
 }
 
