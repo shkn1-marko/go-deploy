@@ -18,20 +18,33 @@ func RunDeploy(name string, store *DeviceStore, sender *FCMSender) error {
 		return nil
 	}
 
-	for _, script := range []string{"build.sh", "deploy.sh"} {
-		output, err := runScript(dir, script)
-		if err != nil {
-			if store != nil && sender != nil {
-				EmailERR(name, script, output, err)
-			}
-			return fmt.Errorf("%s failed: %w", script, err)
-		}
+	status := DeployStatus{
+		Name:      name,
+		Build:     StageFailed,
+		Deploy:    StageSkipped,
+		Timestamp: time.Now().Unix(),
 	}
 
-	if store != nil && sender != nil {
-		EmailOK(name)
+	buildOutput, buildErr := runScript(dir, "build.sh")
+	if buildErr != nil {
+		status.Cause = buildErr.Error()
+		status.Output = buildOutput
+		notify(store, sender, status)
+		return fmt.Errorf("build.sh failed: %w", buildErr)
 	}
+	status.Build = StageOK
 
+	deployOutput, deployErr := runScript(dir, "deploy.sh")
+	if deployErr != nil {
+		status.Deploy = StageFailed
+		status.Cause = deployErr.Error()
+		status.Output = deployOutput
+		notify(store, sender, status)
+		return fmt.Errorf("deploy.sh failed: %w", deployErr)
+	}
+	status.Deploy = StageOK
+
+	notify(store, sender, status)
 	return nil
 }
 
@@ -44,4 +57,17 @@ func runScript(dir, script string) (string, error) {
 
 	output, err := cmd.CombinedOutput()
 	return string(output), err
+}
+
+func notify(store *DeviceStore, sender *FCMSender, status DeployStatus) {
+	if store == nil || sender == nil {
+		return
+	}
+
+	device, ok := store.Current()
+	if !ok {
+		return
+	}
+
+	sender.SendDeployStatus(device, status)
 }
