@@ -45,18 +45,25 @@ func NewFCMSender(path string) (*FCMSender, error) {
 }
 
 func (f *FCMSender) SendDeployStatus(device string, status DeployStatus) {
-	_, err := f.client.Send(context.Background(), &messaging.Message{
-		Token: device,
-		Data: map[string]string{
-			"name":         status.Name,
-			"buildStatus":  string(status.Build),
-			"deployStatus": string(status.Deploy),
-			"cause":        status.Cause,
-			"output":       status.Output,
-			"timestamp":    strconv.FormatInt(status.Timestamp, 10),
-		},
-	})
-	if err != nil {
+	msg := buildDeployMessage(device, status)
+
+	if _, err := f.client.Send(context.Background(), msg); err != nil {
 		log.Println("--", err)
 	}
+}
+
+func buildDeployMessage(device string, status DeployStatus) *messaging.Message {
+	data := map[string]string{
+		"name":         status.Name,
+		"buildStatus":  string(status.Build),
+		"deployStatus": string(status.Deploy),
+		"timestamp":    strconv.FormatInt(status.Timestamp, 10),
+	}
+	if status.Cause != "" {
+		data["cause"] = status.Cause
+	}
+	if status.Output != "" {
+		data["output"] = status.Output
+	}
+	return &messaging.Message{Token: device, Data: data}
 }
