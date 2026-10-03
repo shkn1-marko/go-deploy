@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"strconv"
+	"unicode/utf8"
 
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/messaging"
@@ -63,7 +64,18 @@ func buildDeployMessage(device string, status DeployStatus) *messaging.Message {
 		data["cause"] = status.Cause
 	}
 	if status.Output != "" {
-		data["output"] = status.Output
+		data["output"] = tail(status.Output, 3000)
 	}
 	return &messaging.Message{Token: device, Data: data}
+}
+
+func tail(s string, n int) string {
+	if len(s) <= n {
+		return s
+	}
+	s = s[len(s)-n:]
+	for len(s) > 0 && !utf8.RuneStart(s[0]) {
+		s = s[1:]
+	}
+	return "..." + s
 }
