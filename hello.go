@@ -5,4 +5,4 @@
 // file's only job is to give the webhook something to build and
 // deploy, so go-deploy can say hello to StatRep.
 
-package hello
+package main
